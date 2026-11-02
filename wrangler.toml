@@ -5,7 +5,7 @@ pages_build_output_dir = "./public"
 [[d1_databases]]
 binding = "DB"
 database_name = "puz-store"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "b6015c44-900e-4cd4-9190-b4a2ed433f46"
 
 [[r2_buckets]]
 binding = "BUCKET"
