@@ -1,0 +1,8 @@
+export const json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'content-type':'application/json; charset=utf-8','cache-control':'no-store'}});
+export const slugify=s=>String(s).toLowerCase().normalize('NFKD').replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'-').slice(0,70)||crypto.randomUUID();
+export async function sha256(value){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(value));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
+export async function adminOK(request,env){const h=request.headers.get('authorization')||'';const token=h.replace(/^Bearer\s+/i,'');if(!token)return false;const [payload,sig]=token.split('.');if(!payload||!sig)return false;const expected=await hmac(payload,env.DOWNLOAD_SIGNING_SECRET);if(!safeEqual(sig,expected))return false;try{const p=JSON.parse(atob(payload));return p.admin===true&&p.exp>Date.now()}catch{return false}}
+export async function hmac(value,secret){const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(secret),{name:'HMAC',hash:'SHA-256'},false,['sign']);const sig=await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(value));return btoa(String.fromCharCode(...new Uint8Array(sig))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'')}
+export function safeEqual(a,b){if(a.length!==b.length)return false;let x=0;for(let i=0;i<a.length;i++)x|=a.charCodeAt(i)^b.charCodeAt(i);return x===0}
+export async function signedAdmin(env){const payload=btoa(JSON.stringify({admin:true,exp:Date.now()+8*60*60*1000}));return payload+'.'+await hmac(payload,env.DOWNLOAD_SIGNING_SECRET)}
+export function corsHeaders(){return {}}
